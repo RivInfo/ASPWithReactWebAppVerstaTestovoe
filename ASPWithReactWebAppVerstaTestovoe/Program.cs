@@ -1,15 +1,23 @@
-var builder = WebApplication.CreateBuilder(args);
+using ASPWithReactWebAppVerstaTestovoe.Contexts;
+using ASPWithReactWebAppVerstaTestovoe.DatabaseSettings;
+using ASPWithReactWebAppVerstaTestovoe.Services.OrderContextServices;
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);   
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
+
+builder.Services.Configure<DatabaseSettings>
+    (builder.Configuration.GetSection(nameof(DatabaseSettings)));
+
+builder.Services.AddDbContext<OrdersContext>();
+
+builder.Services.AddScoped<IOrderContextService, OrderContextService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -17,10 +25,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");
+
+app.MapControllers();
 
 app.MapFallbackToFile("index.html");
 

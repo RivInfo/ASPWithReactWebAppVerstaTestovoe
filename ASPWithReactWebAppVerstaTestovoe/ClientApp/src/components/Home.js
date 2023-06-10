@@ -1,26 +1,137 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
+import 'bootstrap/dist/css/bootstrap.css';
 
 export class Home extends Component {
-  static displayName = Home.name;
+    static displayName = Home.name;
 
-  render() {
-    return (
-      <div>
-        <h1>Hello, world!</h1>
-        <p>Welcome to your new single-page application, built with:</p>
-        <ul>
-          <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
-          <li><a href='https://facebook.github.io/react/'>React</a> for client-side code</li>
-          <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
-        </ul>
-        <p>To help you get started, we have also set up:</p>
-        <ul>
-          <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-          <li><strong>Development server integration</strong>. In development mode, the development server from <code>create-react-app</code> runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>
-          <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and your <code>dotnet publish</code> configuration produces minified, efficiently bundled JavaScript files.</li>
-        </ul>
-        <p>The <code>ClientApp</code> subdirectory is a standard React application based on the <code>create-react-app</code> template. If you open a command prompt in that directory, you can run <code>npm</code> commands such as <code>npm test</code> or <code>npm install</code>.</p>
-      </div>
-    );
-  }
+    constructor(props) {
+        super(props);
+        this.state = {
+            SenderCity: "",
+            SenderAddress: "",
+            RecipientCity: "",
+            RecipientAddress: "",
+            CargoWeight: 0.1,
+            CargoPickupDate: "",
+
+            sendingData: false,
+            sendingDataSuccess: false,
+            sendingDataResult: false
+        }
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleInputChange(event) {
+        this.setState({
+            [event.target.name]: event.target.value
+        })
+    }
+
+    handleSubmit(event) {
+        this.setState({sendingData: true});
+
+        this.responseOrder();
+    }
+
+    async responseOrder() {
+        const st = this.state;
+
+        const order = {
+            SenderCity: st.SenderCity,
+            SenderAddress: st.SenderAddress,
+            RecipientCity: st.RecipientCity,
+            RecipientAddress: st.RecipientAddress,
+            CargoWeight: st.CargoWeight,
+            CargoPickupDate: st.CargoPickupDate
+        }
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(order)
+        };
+        const response = await fetch('order', requestOptions);
+        
+        if(!response.ok) {
+            console.log("Ошибка " + response.status)
+
+            this.setState({sendingDataResult: true});
+
+            this.setState({sendingDataSuccess: false});
+            
+            return;
+        }
+        
+        const jsonResponse = await response.json();
+
+        this.setState({sendingDataResult:true});
+        
+        this.setState({sendingDataSuccess : jsonResponse});
+        
+        console.log(jsonResponse); 
+    }
+
+    inputElement(inputName, valueName, value, type = "text", min = 1, max = 100) {
+        return (<div className="form-group row p-2">
+            <label className="col-sm-2 col-form-label fw-bold">{inputName}</label>
+            <input type={type} className={type === "date" ? "col-sm-2" : "col-sm-9"} name={valueName} value={value}
+                   step={0.1}
+                   onChange={this.handleInputChange} min={min} max={max}
+                   placeholder={"Введите " + inputName.toLowerCase()}/>
+        </div>);
+    }
+
+    submitButtonElement() {
+        const st = this.state;
+
+        if (st.sendingData) {
+            if (st.sendingDataResult) {
+                if (st.sendingDataSuccess) {
+                    return (<button className="btn btn-success disabled">Данные успешно отправленны</button>);
+                } else {
+                    return (<button className="btn btn-danger disabled">Ошибка записи данных</button>);
+                }
+            } else {
+                return (<button className="btn btn-warning disabled">Идёт отправка данных...</button>);
+            }
+        }
+
+        if (st.SenderCity.trim().length === 0 || st.SenderAddress.trim().length === 0
+            || st.RecipientCity.trim().length === 0 || st.RecipientAddress.trim().length === 0
+            || st.CargoPickupDate === "" || st.CargoWeight <= 0) {
+            return (<button className="btn btn-secondary disabled">Заполните все поля</button>);
+        } else {
+            return (
+                <button type="submit" onClick={this.handleSubmit} className="btn btn-outline-success">Создать</button>);
+        }
+    }
+
+    render() {
+        return (
+            <div>
+                <h1 className="text-center m-2">Создание заказа</h1>
+                <div className="input-group-lg col-form-label bg-light">
+
+                    {this.inputElement("Город отправителя", "SenderCity", this.state.SenderCity)}
+
+                    {this.inputElement("Адрес отправителя", "SenderAddress", this.state.SenderAddress)}
+
+                    {this.inputElement("Город получателя", "RecipientCity", this.state.RecipientCity)}
+
+                    {this.inputElement("Адрес получателя", "RecipientAddress", this.state.RecipientAddress)}
+
+                    {this.inputElement("Дата забора груза", "CargoPickupDate",
+                        this.state.CargoPickupDate, "date")}
+
+                    {this.inputElement("Вес груза(кг)", "CargoWeight",
+                        this.state.CargoWeight, "number", 0.1, 1000)}
+
+                    <div className="form-group row m-lg-4">
+                        {this.submitButtonElement()}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 }
