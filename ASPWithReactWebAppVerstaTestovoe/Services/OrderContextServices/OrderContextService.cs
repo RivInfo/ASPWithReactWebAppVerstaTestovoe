@@ -39,7 +39,7 @@ public class OrderContextService : IOrderContextService
                 RecipientCity = orderRequest.RecipientCity,
                 RecipientAddress = orderRequest.RecipientAddress,
                 CargoWeight = orderRequest.CargoWeight,
-                CargoPickupDate = orderRequest.CargoPickupDate.ToUniversalTime()
+                CargoPickupDate = orderRequest.CargoPickupDate.ToUniversalTime().AddHours(15)
             });
             await _context.SaveChangesAsync();
             return true;

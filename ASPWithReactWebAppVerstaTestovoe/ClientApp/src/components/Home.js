@@ -20,12 +20,27 @@ export class Home extends Component {
         }
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.rewrite = this.rewrite.bind(this);
     }
 
     handleInputChange(event) {
         this.setState({
             [event.target.name]: event.target.value
         })
+    }
+    
+    rewrite(){
+        this.setState({            
+            SenderCity: "",
+            SenderAddress: "",
+            RecipientCity: "",
+            RecipientAddress: "",
+            CargoWeight: 0.1,
+            CargoPickupDate: "",
+
+            sendingData: false,
+            sendingDataSuccess: false,
+            sendingDataResult: false});
     }
 
     handleSubmit(event) {
@@ -130,6 +145,7 @@ export class Home extends Component {
                     <div className="form-group row m-lg-4">
                         {this.submitButtonElement()}
                     </div>
+                    <button onClick ={this.rewrite} className="btn-sm btn-danger">Отчистить поля</button>
                 </div>
             </div>
         );

@@ -37,7 +37,7 @@ public class OrderController : ControllerBase
         return await _contextService.GetAllOrders(start, count);
     }
 
-    [HttpGet]
+    [HttpGet("/{id:long}")]
     public async Task<ActionResult<Order>> GetCurrent(long id)
     {
         Order? order = await _contextService.GetOrder(id);
